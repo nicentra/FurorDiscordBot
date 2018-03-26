@@ -1,17 +1,24 @@
 import discord
 
+TOKEN = 'NDI3NzIyNTEyMjY5MzEyMDAx.DZo1AA.sUlzLwKbCtMvG0x8Ddiv9xS04sU'
+
 client = discord.Client()
 
 @client.event
-async def on_ready():
-    print('We have logged in as {0.user}'.format(client))
-
-@client.event
 async def on_message(message):
+    # we do not want the bot to reply to itself
     if message.author == client.user:
         return
 
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
+    if message.content.startswith('!hello'):
+        msg = 'Hello {0.author.mention}'.format(message)
+        await client.send_message(message.channel, msg)
 
-client.run('427722512269312001')
+@client.event
+async def on_ready():
+    print('Logged in as')
+    print(client.user.name)
+    print(client.user.id)
+    print('------')
+
+client.run(TOKEN)
