@@ -57,7 +57,7 @@ async def on_message(message):
             await client.send_message(message.author, 'Only include one mention for the command to work')
             await client.delete_message(message)
         elif len(mentions) == 1:
-            if message.author.top_role.name == 'Admin':
+            if message.author.top_role.name == 'Admin' or message.author.top_role.name == 'Admins' or message.author.top_role.name == 'Staff':
                 nickname = message.content.split(' ', maxsplit=2)
                 await client.change_nickname(mentions[0], nickname[len(nickname) - 1])
             else:
