@@ -1,4 +1,5 @@
 import discord
+import datetime
 
 TOKEN = 'NDI3NzIyNTEyMjY5MzEyMDAx.DZo1AA.sUlzLwKbCtMvG0x8Ddiv9xS04sU'
 
@@ -32,11 +33,22 @@ async def on_message(message):
 
     # When invoked purges the whole channel history
     if message.content.startswith('$purge'):
-        if message.author.top_role.name == 'Admin':
-            await client.purge_from(message.channel)
+        timeOffSet = message.content.split(' ')
+        if len(timeOffSet)==1:
+            if message.author.top_role.name == 'Admin':
+                await client.purge_from(message.channel)
+            else:
+                await client.send_message(message.channel, 'Permission insufficient')
+                await client.send_message(message.author, 'This is outrageous, it\'s unfair … I\'m more powerful than any of you. How can you be in the Guild and not be an Admin?')
+        elif (not timeOffSet[1].isdecimal()) or float(timeOffSet[1])<1:
+            await client.send_message(message.author, 'Please only enter valid numbers')
+            await client.delete_message(message)
         else:
-            await client.send_message(message.channel, 'Permission insufficient')
-            await client.send_message(message.author, 'This is outrageous, it\'s unfair … I\'m more powerful than any of you. How can you be in the Guild and not be an Admin?')
+            if message.author.top_role.name == 'Admin':
+                await client.purge_from(message.channel, after=(message.timestamp - datetime.timedelta(minutes=int(timeOffSet[1]))))
+            else:
+                await client.send_message(message.channel, 'Permission insufficient')
+                await client.send_message(message.author, 'This is outrageous, it\'s unfair … I\'m more powerful than any of you. How can you be in the Guild and not be an Admin?')
 
 
     if message.content.startswith('$nick'):
@@ -46,7 +58,7 @@ async def on_message(message):
             await client.delete_message(message)
         elif len(mentions) == 1:
             if message.author.top_role.name == 'Admin':
-                nickname = message.content.split(' ')
+                nickname = message.content.split(' ', maxsplit=2)
                 await client.change_nickname(mentions[0], nickname[len(nickname) - 1])
             else:
                 await client.send_message(message.author,'This is outrageous, it\'s unfair … I\'m more powerful than any of you. How can you be in the Guild and not be an Admin?')
@@ -71,6 +83,7 @@ async def on_message(message):
     if message.content.startswith('$roster'):
         await client.send_message(message.author, 'You can find the roster sheet here: https://docs.google.com/spreadsheets/d/1WLPTnuBK-RwwCC0EJH2UROAiPTUrTvXeBfEIPVYkj4Y/edit#gid=1256147381')
         await client.delete_message(message)
+
 @client.event
 async def on_member_join(member):
     await client.send_message(member, 'Welcome to my server, I hope you enjoy your stay! I\'m currently very much work in progress! For questions contact my programmer on discord under nicentra#7385')
