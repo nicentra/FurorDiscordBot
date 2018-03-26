@@ -13,13 +13,22 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    if message.author == client.user:
-        return
+    # if message.author == client.user and not message.content.startswith(':thinking:'):
+    #    return
 
     if message.content.startswith('$hello'):
         await client.send_message(message.channel, 'Hello! {0.author.mention}'.format(message))
 
     if message.content.startswith('$thinking'):
-        await message.channel.send(':thinking:')
+        await client.send_message(message.channel, ':thinking:')
+
+    # When invoked purges the whole channel history
+    if message.content.startswith('$purge'):
+        await client.purge_from(message.channel)
+
+    if message.content.startswith(':thinking:'):
+        await client.add_reaction(message, '\N{THINKING FACE}')
+
+
 
 client.run(TOKEN)

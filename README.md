@@ -6,3 +6,5 @@ Discord Bot for the Guild Furor on Tarren Mill EU
 https://www.devdungeon.com/content/make-discord-bot-python
 
 http://discordpy.readthedocs.io/
+
+http://discordpy.readthedocs.io/en/rewrite/
