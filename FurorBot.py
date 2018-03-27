@@ -79,13 +79,11 @@ async def on_message(message):
                     else:
                         if message.author.top_role.name in cfg.ROLES:
                             purged_member = mentions[0]
-                            #print(mentions[0].name)
                             del_count = 0
-                            print('Counter before ever invoking is_from: {}'.format(del_count))
 
                             def is_from(m):
                                 nonlocal del_count
-                                print('Counter during is_from: {}'.format(del_count))
+                                nonlocal purged_member
                                 if del_count < int(message_content[3])+1:
                                     del_count += 1
                                     return m.author == purged_member
@@ -93,7 +91,6 @@ async def on_message(message):
                                     return False
 
                             await client.purge_from(message.channel, check=is_from)
-                            print('Counter after invoking is_from: {}'.format(del_count))
                         else:
                             await client.send_message(message.author, 'Permission insufficient')
                             await client.delete_message(message)
