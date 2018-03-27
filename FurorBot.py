@@ -28,7 +28,7 @@ async def on_message(message):
     if message.content.startswith('$thinking'):
         await client.send_message(message.channel, ':thinking:')
 
-    # Command to purge the channel it has been invoked in, it has 3 options:
+    # Command to purge the channel it has been invoked in, it has 3 options and is only useable by admins:
     # No option ($purge) => purges the maximum amount of messages from the invoked channel
     # $purge time X => purges all messages from the last X minutes
     # $purge amount X => purges last X messages
@@ -98,6 +98,9 @@ async def on_message(message):
                 await client.send_message(message.author, 'Invalid parameter')
                 await client.delete_message(message)
 
+    # Command to change your nickname or someone elses
+    # Use $nick/$nickname "YourNewName" to change your nickname
+    # Use $nick/$nickname @mention "NewNickname" to change @mention nickname, only useable by admins
     if message.content.lower().startswith(tuple(cfg.NICK)):
         mentions = message.mentions
         if len(mentions) > 1:
@@ -115,9 +118,11 @@ async def on_message(message):
             print('{} ; {}'.format(nickname[0], nickname[1]))
             await client.change_nickname(message.author, nickname[1])
 
-    if message.content.lower().startswith(':thinking:'):
+    # Joke command, trigger when someone posts the thinking emoji and then adds the thinking emoji as a reaction to the message. Proof of concept
+    if ':thinking:' in message.content.lower():
         await client.add_reaction(message, '\N{THINKING FACE}')
 
+    # Shuts down the bot, can only be invoked by admins
     if message.content.lower().startswith('$begone'):
         if message.author.top_role.name in cfg.ROLES:
             await client.send_message(message.channel, 'byebye, bot is sleepy')
@@ -126,6 +131,7 @@ async def on_message(message):
             await client.send_message(message.author, 'Permission insufficient')
             await client.delete_message(message)
 
+    # Command which whispers the invoker the link to our roster sheet
     if message.content.lower().startswith('$roster'):
         await client.send_message(message.author,
                                   'You can find the roster sheet here: https://docs.google.com/spreadsheets/d/1WLPTnuBK-RwwCC0EJH2UROAiPTUrTvXeBfEIPVYkj4Y/edit#gid=1256147381')
