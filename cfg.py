@@ -5,6 +5,8 @@ import discord
 
 TOKEN = 'NDI3NzIyNTEyMjY5MzEyMDAx.DZo1AA.sUlzLwKbCtMvG0x8Ddiv9xS04sU'
 
+purged_member = None
+
 ROLES = [
     "Admins",
     "Staff"
@@ -29,9 +31,11 @@ AMOUNT = [
 
 MEMBER = [
     "member",
-    "person"
+    "person",
+    "from"
 ]
 
 
-# def is_member(message, member):
-#     return message.author == member
+
+#def is_from(m):
+#    return m.author == purged_member
