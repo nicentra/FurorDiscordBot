@@ -1,10 +1,13 @@
 from src import cfg
 import discord
 import datetime
+import _thread
 
 client = discord.Client()
 
-
+now = datetime.datetime.now()
+log_dir = './log/'
+log_name = 'log-{:04d}-{:02d}-{:02d}.txt'.format(now.year, now.month, now.day)
 
 
 @client.event
@@ -17,6 +20,7 @@ async def on_ready():
             if channels.name == 'botspam':
                 await client.send_message(channels, 'Bot online :robot:')
                 break
+    # _thread.start_new_thread(cfg.raider_reminder, (client, ))
 
 
 @client.event
@@ -28,7 +32,7 @@ async def on_message(message):
         else:
             rec = message.channel.me
         time = message.timestamp
-        cfg.write_to_log('From {} to {} at {:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}:\n{}\n\n'.format(message.author, rec, time.year, time.month, time.day, time.hour, time.minute, time.second, message.clean_content))
+        cfg.write_to_log(log_dir, log_name, 'From {} to {} at {:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}:\n{}\n\n'.format(message.author, rec, time.year, time.month, time.day, time.hour, time.minute, time.second, message.clean_content))
 
     if message.author == client.user and not message.content.startswith(':thinking:'):
         return
