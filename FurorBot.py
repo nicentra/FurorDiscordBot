@@ -1,8 +1,16 @@
 import cfg
 import discord
 import datetime
+import os.path
 
 client = discord.Client()
+
+now = datetime.datetime.now()
+log_path = 'bot_log/log-{}-{}-{}.txt'.format(now.year, now.month, now.day)
+if os.path.exists(log_path):
+    log = open(log_path, 'a')
+else:
+    log = open(log_path, 'x')
 
 
 @client.event
@@ -19,11 +27,24 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+
+    if message.channel.is_private:
+        if message.author == message.channel.me:
+            rec = message.channel.recipients[0]
+        else:
+            rec = message.channel.me
+        time = message.timestamp
+        log.write('From {} to {} at {}-{}-{} {}:{}:{}:\n{}\n\n'.format(message.author, rec, time.year, time.month, time.day, time.hour, time.minute, time.second, message.clean_content))
+        log.flush()
+        # print('From {} to {} at {}:\n{}\n'.format(message.author, rec, message.timestamp, message.clean_content))
+
     if message.author == client.user and not message.content.startswith(':thinking:'):
         return
 
-    for r in message.author.roles:
-        print('{}  : No casting = {}  :  Casting = {}'.format(r, r == 'raiders', str(r) == 'raiders'))
+    # for r in message.author.roles:
+    #     print('{}  : No casting = {}  :  Casting = {}'.format(r, r == 'raiders', str(r) == 'raiders'))
+
+
 
     if message.content.startswith('$hello'):
         await client.send_message(message.channel, 'Hello! {0.author.mention}'.format(message))
