@@ -1,4 +1,4 @@
-import cfg
+from src import cfg
 import discord
 import datetime
 import os.path
@@ -6,7 +6,7 @@ import os.path
 client = discord.Client()
 
 now = datetime.datetime.now()
-log_path = 'bot_log/log-{}-{}-{}.txt'.format(now.year, now.month, now.day)
+log_path = './bot_log/log-{}-{}-{}.txt'.format(now.year, now.month, now.day)
 if os.path.exists(log_path):
     log = open(log_path, 'a')
 else:
@@ -34,7 +34,7 @@ async def on_message(message):
         else:
             rec = message.channel.me
         time = message.timestamp
-        log.write('From {} to {} at {}-{}-{} {}:{}:{}:\n{}\n\n'.format(message.author, rec, time.year, time.month, time.day, time.hour, time.minute, time.second, message.clean_content))
+        log.write('From {} to {} at {:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}:\n{}\n\n'.format(message.author, rec, time.year, time.month, time.day, time.hour, time.minute, time.second, message.clean_content))
         log.flush()
         # print('From {} to {} at {}:\n{}\n'.format(message.author, rec, message.timestamp, message.clean_content))
 
