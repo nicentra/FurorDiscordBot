@@ -35,7 +35,4 @@ MEMBER = [
     "from"
 ]
 
-
-
-#def is_from(m):
-#    return m.author == purged_member
+# RAIDER_GREETING = discord.Embed()

@@ -22,6 +22,9 @@ async def on_message(message):
     if message.author == client.user and not message.content.startswith(':thinking:'):
         return
 
+    for r in message.author.roles:
+        print('{}  : No casting = {}  :  Casting = {}'.format(r, r == 'raiders', str(r) == 'raiders'))
+
     if message.content.startswith('$hello'):
         await client.send_message(message.channel, 'Hello! {0.author.mention}'.format(message))
 
@@ -63,7 +66,7 @@ async def on_message(message):
                     await client.delete_message(message)
                 else:
                     if message.author.top_role.name in cfg.ROLES:
-                        await client.purge_from(message.channel, limit=(int(message_content[2] + 1)))
+                        await client.purge_from(message.channel, limit=(int(message_content[2]) + 1))
                     else:
                         await client.send_message(message.author, 'Permission insufficient')
                         await client.delete_message(message)
@@ -84,13 +87,14 @@ async def on_message(message):
                             def is_from(m):
                                 nonlocal del_count
                                 nonlocal purged_member
-                                if del_count < int(message_content[3])+1:
+                                if del_count < int(message_content[3]) + 1:
                                     del_count += 1
                                     return m.author == purged_member
                                 else:
                                     return False
 
                             await client.purge_from(message.channel, check=is_from)
+                            await client.delete_message(message)
                         else:
                             await client.send_message(message.author, 'Permission insufficient')
                             await client.delete_message(message)
@@ -146,6 +150,19 @@ async def on_member_join(member):
     else:
         await client.send_message(member,
                                   'Welcome to the Furor guild discord! Please make sure to change your nickname to your ingame character name (invoke $nick [YOURNAME] for this). Additionally try $commands for a full list of commands. For questions contact my creator on discord under nicentra#7385')
+
+
+@client.event
+async def on_member_update(before, after):
+    t = False
+    for r in before.roles:
+        if str(r) == 'raiders':
+            t = True
+    if not t:
+        for r in after.roles:
+            if str(r) == 'raiders':
+                await client.send_message(after,
+                                          'Congratulations on becoming a part of the raid team! If you haven\'t yet, please change your server nickname to your ingame charactername so we can identify you! The easiest way to do so is using my command $nick MyNewNickname !\n\nFurthermore, be sure to check out our #resources where you can a link to our forums, our attendance sheet as well as a list of mandatory addons!')
 
 
 client.run(cfg.TOKEN)
