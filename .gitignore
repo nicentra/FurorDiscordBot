@@ -157,5 +157,5 @@ venv.bak/
 .mypy_cache/
 .idea/
 
-/log.txt
 /bot_log/
+/log/

@@ -1,7 +1,24 @@
-# cfg.py
-# This is a config file for the bot
+import datetime
+import os
 
-import discord
+
+def write_to_log(entry):
+    now = datetime.datetime.now()
+    log_path = './log/log-{:04d}-{:02d}-{:02d}.txt'.format(now.year, now.month, now.day)
+
+    if not os.path.isdir('./log/'):
+        os.mkdir('./log/')
+        log = open(log_path, 'x')
+    elif not os.path.isfile(log_path):
+        log = open(log_path, 'x')
+    else:
+        log = open(log_path, 'a')
+
+
+
+    log.write(entry)
+    log.close()
+
 
 TOKEN = 'NDI3NzIyNTEyMjY5MzEyMDAx.DZo1AA.sUlzLwKbCtMvG0x8Ddiv9xS04sU'
 
