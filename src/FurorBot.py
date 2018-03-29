@@ -5,11 +5,9 @@ from discord.ext import commands
 import datetime
 import asyncio
 
-description = '''An example bot to showcase the discord.ext.commands extension
-module.
-There are a number of utility commands being showcased here.'''
+description = '''Discord Bot for the Guild Furor on Tarren Mill-EU'''
 
-bot = commands.Bot(command_prefix='$', description=description)
+bot = commands.Bot(command_prefix='$', description=description, )
 
 now = datetime.datetime.now()
 log_dir = './log/'
@@ -39,8 +37,12 @@ async def raider_reminder():
 
 
 @bot.command()
-async def test():
-    await bot.say('Help me!!!')
+async def test(content):
+    # print(content)
+    # print(len(content.mentions))
+    #
+    # await bot.say('Yo {}'.format(content.mentions[0].mention))
+    await bot.say('')
 
 
 @bot.command()
@@ -59,13 +61,40 @@ async def multiply(left: int, right: int = 1):
 async def echo(s: str):
     await bot.say('{}'.format(s))
 
+
 @bot.command(pass_context=True)
 async def hello(ctx):
     await bot.say('Hello {0.message.author.mention}!'.format(ctx))
 
+@bot.command(pass_context=True)
+async def nick(ctx):
+    message = ctx.message
+    mentions = message.mentions
+    if len(mentions) == 0:
+        split = message.content.split(' ', maxsplit=1)
+        bot.change_nickname(message.author, split[1])
+    elif len(mentions) == 1:
+        if str(message.author.top_role) not in cfg.ROLES:
+            await bot.send_message(message.author, 'Insufficient permission')
+            await bot.delete_message(message)
+        else:
+            split = message.content.split(' ', maxsplit=2)
+            await bot.change_nickname(mentions[0], split[2])
+    else:
+        await bot.send_message(message.author, 'Too many mentions')
+        await bot.delete_message(message)
+
+
+@bot.command()
+async def repeat(times : int, content='repeating...'):
+    """Repeats a message multiple times."""
+    for i in range(times):
+        await bot.say(content)
+
 @bot.command()
 async def thinking():
     await bot.say(':thinking:')
+
 
 @bot.event
 async def on_ready():
@@ -82,6 +111,7 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     await bot.process_commands(message)
+    print(message.content)
     if message.channel.is_private:
         if message.author == message.channel.me:
             rec = message.channel.recipients[0]
@@ -190,22 +220,22 @@ async def on_message(message):
     # Command to change your nickname or someone elses
     # Use $nick/$nickname "YourNewName" to change your nickname
     # Use $nick/$nickname @mention "NewNickname" to change @mention nickname, only useable by admins
-    if message.content.lower().startswith(tuple(cfg.NICK)):
-        mentions = message.mentions
-        if len(mentions) > 1:
-            await bot.send_message(message.author, 'Only include one mention for the command to work')
-            await bot.delete_message(message)
-        elif len(mentions) == 1:
-            if message.author.top_role.name in cfg.ROLES:
-                nickname = message.content.split(' ', maxsplit=2)
-                await bot.change_nickname(mentions[0], nickname[len(nickname) - 1])
-            else:
-                await bot.send_message(message.author, 'Permission insufficient')
-                await bot.delete_message(message)
-        else:
-            nickname = message.content.split(' ', maxsplit=1)
-            print('{} ; {}'.format(nickname[0], nickname[1]))
-            await bot.change_nickname(message.author, nickname[1])
+    # if message.content.lower().startswith(tuple(cfg.NICK)):
+    #     mentions = message.mentions
+    #     if len(mentions) > 1:
+    #         await bot.send_message(message.author, 'Only include one mention for the command to work')
+    #         await bot.delete_message(message)
+    #     elif len(mentions) == 1:
+    #         if message.author.top_role.name in cfg.ROLES:
+    #             nickname = message.content.split(' ', maxsplit=2)
+    #             await bot.change_nickname(mentions[0], nickname[len(nickname) - 1])
+    #         else:
+    #             await bot.send_message(message.author, 'Permission insufficient')
+    #             await bot.delete_message(message)
+    #     else:
+    #         nickname = message.content.split(' ', maxsplit=1)
+    #         print('{} ; {}'.format(nickname[0], nickname[1]))
+    #         await bot.change_nickname(message.author, nickname[1])
 
     # Joke command, trigger when someone posts the thinking emoji and then adds the thinking emoji as a reaction to the message. Proof of concept
     if ':thinking:' in message.content.lower():
@@ -223,7 +253,7 @@ async def on_message(message):
     # Command which whispers the invoker the link to our roster sheet
     if message.content.lower().startswith('$roster'):
         await bot.send_message(message.author,
-                                  'You can find the roster sheet here: https://docs.google.com/spreadsheets/d/1WLPTnuBK-RwwCC0EJH2UROAiPTUrTvXeBfEIPVYkj4Y/edit#gid=1256147381')
+                               'You can find the roster sheet here: https://docs.google.com/spreadsheets/d/1WLPTnuBK-RwwCC0EJH2UROAiPTUrTvXeBfEIPVYkj4Y/edit#gid=1256147381')
         await bot.delete_message(message)
 
 
@@ -231,10 +261,10 @@ async def on_message(message):
 async def on_member_join(member):
     if member.server.name == 'FurorBotTest':
         await bot.send_message(member,
-                                  'Welcome to my server, I hope you enjoy your stay! I\'m currently very much work in progress! For questions contact my creator on discord under nicentra#7385')
+                               'Welcome to my server, I hope you enjoy your stay! I\'m currently very much work in progress! For questions contact my creator on discord under nicentra#7385')
     else:
         await bot.send_message(member,
-                                  'Welcome to the Furor guild discord! Please make sure to change your nickname to your ingame character name (invoke $nick [YOURNAME] for this). Additionally try $commands for a full list of commands. For questions contact my creator on discord under nicentra#7385')
+                               'Welcome to the Furor guild discord! Please make sure to change your nickname to your ingame character name (invoke $nick [YOURNAME] for this). Additionally try $commands for a full list of commands. For questions contact my creator on discord under nicentra#7385')
 
 
 @bot.event
@@ -247,7 +277,7 @@ async def on_member_update(before, after):
         for r in after.roles:
             if str(r) == 'raiders':
                 await bot.send_message(after,
-                                          'Congratulations on becoming a part of the raid team! If you haven\'t yet, please change your server nickname to your ingame charactername so we can identify you! The easiest way to do so is using my command $nick MyNewNickname !\n\nFurthermore, be sure to check out our #resources where you can a link to our forums, our attendance sheet as well as a list of mandatory addons!')
+                                       'Congratulations on becoming a part of the raid team! If you haven\'t yet, please change your server nickname to your ingame charactername so we can identify you! The easiest way to do so is using my command $nick MyNewNickname !\n\nFurthermore, be sure to check out our #resources where you can a link to our forums, our attendance sheet as well as a list of mandatory addons!')
 
 
 bot.loop.create_task(raider_reminder())
