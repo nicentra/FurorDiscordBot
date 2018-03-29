@@ -23,12 +23,14 @@ def raider_reminder(client):
     while 1:
         date = datetime.datetime.now()
         weekday = calendar.weekday(date.year, date.month, date.day)
-        if (weekday == 2) and date.hour == 18 and date.minute == 28 and date.second == 0:
+        if (weekday == 3) and date.hour == 9 and date.minute == 23:
             for s in client.servers:
-                if str(s) == 'FurorBotTest':
+                #print(str(s))
+                if s.name == 'FurorBotTest':
                     for c in s.channels:
-                        if str(c) == 'botspam':
-                            client.send_message(c, '@raiders Remember to sign up for raids')
+                        #print(str(c))
+                        if c.name == 'botspam':
+                            client.send_message(c, '{} Remember to sign up for raids'.format(s.roles[1].mention))
 
 
 TOKEN = 'NDI3NzIyNTEyMjY5MzEyMDAx.DZo1AA.sUlzLwKbCtMvG0x8Ddiv9xS04sU'

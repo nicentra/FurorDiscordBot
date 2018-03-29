@@ -20,33 +20,44 @@ async def on_ready():
             if channels.name == 'botspam':
                 await client.send_message(channels, 'Bot online :robot:')
                 break
-    # _thread.start_new_thread(cfg.raider_reminder, (client, ))
+    _thread.start_new_thread(cfg.raider_reminder, (client,))
 
 
 @client.event
 async def on_message(message):
-
     if message.channel.is_private:
         if message.author == message.channel.me:
             rec = message.channel.recipients[0]
         else:
             rec = message.channel.me
         time = message.timestamp
-        cfg.write_to_log(log_dir, log_name, 'From {} to {} at {:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}:\n{}\n\n'.format(message.author, rec, time.year, time.month, time.day, time.hour, time.minute, time.second, message.clean_content))
-
-    if message.author == client.user and not message.content.startswith(':thinking:'):
-        return
-
-    # for r in message.author.roles:
-    #     print('{}  : No casting = {}  :  Casting = {}'.format(r, r == 'raiders', str(r) == 'raiders'))
-
-
+        cfg.write_to_log(log_dir, log_name,
+                         'From {} to {} at {:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}:\n{}\n\n'.format(message.author,
+                                                                                                      rec, time.year,
+                                                                                                      time.month,
+                                                                                                      time.day,
+                                                                                                      time.hour,
+                                                                                                      time.minute,
+                                                                                                      time.second,
+                                                                                                      message.clean_content))
 
     if message.content.startswith('$hello'):
         await client.send_message(message.channel, 'Hello! {0.author.mention}'.format(message))
 
     if message.content.startswith('$thinking'):
         await client.send_message(message.channel, ':thinking:')
+
+    # Joke command, trigger when someone posts the thinking emoji and then adds the thinking emoji as a reaction to the message. Proof of concept
+    if ':thinking:' in message.content.lower():
+        await client.add_reaction(message, '\N{THINKING FACE}')
+
+    if message.author == client.user or message.channel.is_private:
+        return
+
+    # for r in message.author.roles:
+    #     print('{}  : No casting = {}  :  Casting = {}'.format(r, r == 'raiders', str(r) == 'raiders'))
+
+    # await client.send_message(message.channel, 'Test mention {}'.format(message.author.roles[1].mention))
 
     # Command to purge the channel it has been invoked in, it has 3 options and is only useable by admins:
     # No option ($purge) => purges the maximum amount of messages from the invoked channel
