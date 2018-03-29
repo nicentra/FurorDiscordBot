@@ -1,11 +1,16 @@
 import calendar
 from src import cfg
 import discord
+from discord.ext import commands
 import datetime
 import _thread
 import asyncio
 
-client = discord.Client()
+description = '''An example bot to showcase the discord.ext.commands extension
+module.
+There are a number of utility commands being showcased here.'''
+
+client = commands.Bot(command_prefix='$', description=description)
 
 now = datetime.datetime.now()
 log_dir = './log/'
@@ -27,10 +32,21 @@ async def raider_reminder():
     while not client.is_closed:
         date = datetime.datetime.now()
         weekday = calendar.weekday(date.year, date.month, date.day)
-        if (weekday == 3 or weekday == 5 or weekday == 0) and date.hour == 20 and date.minute == 0:
+        if (weekday == 3) and date.hour == 11 and date.minute == 49:
+        # if (weekday == 3 or weekday == 5 or weekday == 0) and date.hour == 20 and date.minute == 0:
             await client.send_message(channel, '{} Remember to sign up for raids'.format(role_mention.mention))
-        await asyncio.sleep(60)
+            await asyncio.sleep(60)
+        await asyncio.sleep(1)
 
+
+# @client.command
+# async def test():
+#     await client.say('Help me!!!')
+#
+# @client.command
+# async def add(left : int, right : int):
+#     """Adds two numbers together."""
+#     await client.say(left + right)
 
 @client.event
 async def on_ready():
