@@ -1,13 +1,35 @@
+import calendar
 from src import cfg
 import discord
 import datetime
 import _thread
+import asyncio
 
 client = discord.Client()
 
 now = datetime.datetime.now()
 log_dir = './log/'
 log_name = 'log-{:04d}-{:02d}-{:02d}.txt'.format(now.year, now.month, now.day)
+
+
+async def raider_reminder():
+    await client.wait_until_ready()
+    for s in client.servers:
+        # print(str(s))
+        if s.name == 'FurorBotTest':
+            for c in s.channels:
+                for r in s.roles:
+                    if str(r) == 'raiders':
+                        role_mention = r
+                # print(str(c))
+                if c.name == 'botspam':
+                    channel = c
+    while not client.is_closed:
+        date = datetime.datetime.now()
+        weekday = calendar.weekday(date.year, date.month, date.day)
+        if (weekday == 3 or weekday == 5 or weekday == 0) and date.hour == 20 and date.minute == 0:
+            await client.send_message(channel, '{} Remember to sign up for raids'.format(role_mention.mention))
+        await asyncio.sleep(60)
 
 
 @client.event
@@ -20,7 +42,11 @@ async def on_ready():
             if channels.name == 'botspam':
                 await client.send_message(channels, 'Bot online :robot:')
                 break
-    _thread.start_new_thread(cfg.raider_reminder, (client,))
+    # loop = asyncio.get_event_loop()
+    # loop.run_until_complete(cfg.raider_reminder(client))
+    # loop.run_forever()
+
+    # _thread.start_new_thread(cfg.raider_reminder, (client,))
 
 
 @client.event
@@ -192,5 +218,5 @@ async def on_member_update(before, after):
                 await client.send_message(after,
                                           'Congratulations on becoming a part of the raid team! If you haven\'t yet, please change your server nickname to your ingame charactername so we can identify you! The easiest way to do so is using my command $nick MyNewNickname !\n\nFurthermore, be sure to check out our #resources where you can a link to our forums, our attendance sheet as well as a list of mandatory addons!')
 
-
+client.loop.create_task(raider_reminder())
 client.run(cfg.TOKEN)
