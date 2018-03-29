@@ -6,7 +6,6 @@ import discord
 
 
 def write_to_log(log_dir, log_name, entry):
-    # now = datetime.datetime.now()
     log_path = '{}{}'.format(log_dir, log_name)
 
     if not os.path.isdir(log_dir):
@@ -21,27 +20,7 @@ def write_to_log(log_dir, log_name, entry):
     log.close()
 
 
-# def raider_reminder(client):
-#     while 1:
-#         date = datetime.datetime.now()
-#         weekday = calendar.weekday(date.year, date.month, date.day)
-#         if (weekday == 3) and date.hour == 11 and date.minute == 17 and date.second < 5:
-#             for s in client.servers:
-#                 #print(str(s))
-#                 if s.name == 'FurorBotTest':
-#                     for c in s.channels:
-#                         for r in s.roles:
-#                             if str(r) == 'raiders':
-#                                 role_mention = r
-#                         #print(str(c))
-#                         if c.name == 'botspam':
-#                             client.send_message(c, '{} Remember to sign up for raids'.format(role_mention.mention))
-#                             #time.sleep(60)
-
-
 TOKEN = 'NDI3NzIyNTEyMjY5MzEyMDAx.DZo1AA.sUlzLwKbCtMvG0x8Ddiv9xS04sU'
-
-purged_member = None
 
 ROLES = [
     "Admins",
