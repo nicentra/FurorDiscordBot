@@ -29,8 +29,7 @@ async def raider_reminder():
     while not bot.is_closed:
         date = datetime.datetime.now()
         weekday = calendar.weekday(date.year, date.month, date.day)
-        if (weekday == 3) and date.hour == 11 and date.minute == 49:
-            # if (weekday == 3 or weekday == 5 or weekday == 0) and date.hour == 20 and date.minute == 0:
+        if (weekday == 3 or weekday == 6) and date.hour == 19 and date.minute == 0:
             await bot.send_message(channel, '{} Remember to sign up for raids'.format(role_mention.mention))
             await asyncio.sleep(60)
         await asyncio.sleep(1)
@@ -66,6 +65,7 @@ async def echo(s: str):
 async def hello(ctx):
     await bot.say('Hello {0.message.author.mention}!'.format(ctx))
 
+
 @bot.command(pass_context=True)
 async def nick(ctx):
     message = ctx.message
@@ -86,10 +86,11 @@ async def nick(ctx):
 
 
 @bot.command()
-async def repeat(times : int, content='repeating...'):
+async def repeat(times: int, *, content='repeating...'):
     """Repeats a message multiple times."""
     for i in range(times):
         await bot.say(content)
+
 
 @bot.command()
 async def thinking():
