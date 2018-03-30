@@ -1,9 +1,10 @@
-import calendar
-from src import cfg
-import discord
-from discord.ext import commands
-import datetime
 import asyncio
+import calendar
+import datetime
+
+from discord.ext import commands
+
+from src import cfg
 
 description = '''Discord Bot for the Guild Furor on Tarren Mill-EU'''
 
@@ -97,6 +98,59 @@ async def thinking():
     await bot.say(':thinking:')
 
 
+# Command to purge the channel it has been invoked in, it has 3 options and is only useable by admins:
+# No option ($purge) => purges the maximum amount of messages from the invoked channel
+# $purge time X => purges all messages from the last X minutes
+# $purge amount X => purges last X messages
+# $purge member @mention X => Purges last X messages from the mentioned member (make sure to validate the mention)
+
+@bot.command(pass_context=True)
+async def purge(ctx, option: str = '', parameter='', from_parameter=100):
+    message = ctx.message
+    if str(message.author.top_role) not in cfg.ROLES:
+        await bot.send_message(message.author, 'Insufficient permission')
+        await bot.delete_message(message)
+    elif option == '':  # Purge everything
+        await bot.purge_from(message.channel)
+    elif option in cfg.TIME:  # Purge everything from X minutes ago
+        if (not parameter.isdecimal()) or int(parameter) < 1:
+            await bot.send_message(message.author, 'Please only enter valid numbers')
+            await bot.delete_message(message)
+        else:
+            await bot.purge_from(message.channel, after=(
+                    message.timestamp - datetime.timedelta(minutes=int(parameter))))
+    elif option in cfg.AMOUNT:  # Purge X amount of messages
+        if (not parameter.isdecimal()) or int(parameter) < 1:
+            await bot.send_message(message.author, 'Please only enter valid numbers')
+            await bot.delete_message(message)
+        else:
+            await bot.purge_from(message.channel, limit=(int(parameter) + 1))
+    elif option in cfg.MEMBER:  # Purge X messages from @mention
+        mentions = message.mentions
+        if len(mentions) > 1:
+            await bot.send_message(message.author, 'Only include one mention for the command to work')
+            await bot.delete_message(message)
+        else:
+            if (not from_parameter.isdecimal()) or int(from_parameter) < 1:
+                await bot.send_message(message.author, 'Please only enter valid numbers')
+                await bot.delete_message(message)
+            else:
+                purged_member = mentions[0]
+                del_count = 0
+
+                def is_from(m):
+                    nonlocal del_count
+                    nonlocal purged_member
+                    if del_count < int(from_parameter) + 1:
+                        del_count += 1
+                        return m.author == purged_member
+                    else:
+                        return False
+
+                await bot.purge_from(message.channel, check=is_from)
+                await bot.delete_message(message)
+
+
 @bot.event
 async def on_ready():
     print('Logged in as')
@@ -112,7 +166,7 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     await bot.process_commands(message)
-    print(message.content)
+    # print(message.content)
     if message.channel.is_private:
         if message.author == message.channel.me:
             rec = message.channel.recipients[0]
@@ -141,102 +195,6 @@ async def on_message(message):
 
     if message.author == bot.user or message.channel.is_private:
         return
-
-    # for r in message.author.roles:
-    #     print('{}  : No casting = {}  :  Casting = {}'.format(r, r == 'raiders', str(r) == 'raiders'))
-
-    # await client.send_message(message.channel, 'Test mention {}'.format(message.author.roles[1].mention))
-
-    # Command to purge the channel it has been invoked in, it has 3 options and is only useable by admins:
-    # No option ($purge) => purges the maximum amount of messages from the invoked channel
-    # $purge time X => purges all messages from the last X minutes
-    # $purge amount X => purges last X messages
-    # $purge member @mention X => Purges last X messages from the mentioned member (make sure to validate the mention)
-    if message.content.lower().startswith('$purge'):
-        message_content = message.content.split(' ')
-        if len(message_content) == 1:
-            if message.author.top_role.name in cfg.ROLES:
-                await bot.purge_from(message.channel)
-            else:
-                await bot.send_message(message.author, 'Permission insufficient')
-                await bot.delete_message(message)
-        elif len(message_content) < 3:
-            await bot.send_message(message.channel, 'Insufficient parameters')
-        elif len(message_content) > 4:
-            await bot.send_message(message.channel, 'Too many parameters')
-        else:
-            if message_content[1].lower() in cfg.TIME:
-                if (not message_content[2].isdecimal()) or float(message_content[2]) < 1:
-                    await bot.send_message(message.author, 'Please only enter valid numbers')
-                    await bot.delete_message(message)
-                else:
-                    if message.author.top_role.name in cfg.ROLES:
-                        await bot.purge_from(message.channel, after=(
-                                message.timestamp - datetime.timedelta(minutes=int(message_content[2]))))
-                    else:
-                        await bot.send_message(message.author, 'Permission insufficient')
-                        await bot.delete_message(message)
-            elif message_content[1].lower() in cfg.AMOUNT:
-                if (not message_content[2].isdecimal()) or float(message_content[2]) < 1:
-                    await bot.send_message(message.author, 'Please only enter valid numbers')
-                    await bot.delete_message(message)
-                else:
-                    if message.author.top_role.name in cfg.ROLES:
-                        await bot.purge_from(message.channel, limit=(int(message_content[2]) + 1))
-                    else:
-                        await bot.send_message(message.author, 'Permission insufficient')
-                        await bot.delete_message(message)
-            elif message_content[1].lower() in cfg.MEMBER:
-                mentions = message.mentions
-                if len(mentions) > 1:
-                    await bot.send_message(message.author, 'Only include one mention for the command to work')
-                    await bot.delete_message(message)
-                else:
-                    if (not message_content[3].isdecimal()) or float(message_content[3]) < 1:
-                        await bot.send_message(message.author, 'Please only enter valid numbers')
-                        await bot.delete_message(message)
-                    else:
-                        if message.author.top_role.name in cfg.ROLES:
-                            purged_member = mentions[0]
-                            del_count = 0
-
-                            def is_from(m):
-                                nonlocal del_count
-                                nonlocal purged_member
-                                if del_count < int(message_content[3]) + 1:
-                                    del_count += 1
-                                    return m.author == purged_member
-                                else:
-                                    return False
-
-                            await bot.purge_from(message.channel, check=is_from)
-                            await bot.delete_message(message)
-                        else:
-                            await bot.send_message(message.author, 'Permission insufficient')
-                            await bot.delete_message(message)
-            else:
-                await bot.send_message(message.author, 'Invalid parameter')
-                await bot.delete_message(message)
-
-    # Command to change your nickname or someone elses
-    # Use $nick/$nickname "YourNewName" to change your nickname
-    # Use $nick/$nickname @mention "NewNickname" to change @mention nickname, only useable by admins
-    # if message.content.lower().startswith(tuple(cfg.NICK)):
-    #     mentions = message.mentions
-    #     if len(mentions) > 1:
-    #         await bot.send_message(message.author, 'Only include one mention for the command to work')
-    #         await bot.delete_message(message)
-    #     elif len(mentions) == 1:
-    #         if message.author.top_role.name in cfg.ROLES:
-    #             nickname = message.content.split(' ', maxsplit=2)
-    #             await bot.change_nickname(mentions[0], nickname[len(nickname) - 1])
-    #         else:
-    #             await bot.send_message(message.author, 'Permission insufficient')
-    #             await bot.delete_message(message)
-    #     else:
-    #         nickname = message.content.split(' ', maxsplit=1)
-    #         print('{} ; {}'.format(nickname[0], nickname[1]))
-    #         await bot.change_nickname(message.author, nickname[1])
 
     # Joke command, trigger when someone posts the thinking emoji and then adds the thinking emoji as a reaction to the message. Proof of concept
     if ':thinking:' in message.content.lower():
