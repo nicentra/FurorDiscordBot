@@ -93,11 +93,6 @@ async def repeat(times: int, *, content='repeating...'):
         await bot.say(content)
 
 
-@bot.command()
-async def thinking():
-    await bot.say(':thinking:')
-
-
 # Command to purge the channel it has been invoked in, it has 3 options and is only useable by admins:
 # No option ($purge) => purges the maximum amount of messages from the invoked channel
 # $purge time X => purges all messages from the last X minutes
@@ -125,7 +120,7 @@ async def purge(ctx, option: str = '', parameter='', from_parameter=100):
             await bot.delete_message(message)
         else:
             await bot.purge_from(message.channel, limit=(int(parameter) + 1))
-    elif option in cfg.MEMBER:  # Purge X messages from @mention
+    elif option in cfg.MEMBER:  # Purge X messages from @mention, still not working properly aaaaaaaaaaargh, back to the drawing board <.<
         mentions = message.mentions
         if len(mentions) > 1:
             await bot.send_message(message.author, 'Only include one mention for the command to work')
@@ -151,6 +146,27 @@ async def purge(ctx, option: str = '', parameter='', from_parameter=100):
                 await bot.delete_message(message)
 
 
+@bot.command()
+async def thinking():
+    await bot.say(':thinking:')
+
+
+@bot.command(pass_context=True)
+async def begone(ctx):
+    if ctx.message.author.top_role.name in cfg.ROLES:
+        await bot.say('byebye, bot is sleepy')
+        await bot.logout()
+    else:
+        await bot.send_message(ctx.message.author, 'Permission insufficient')
+        await bot.delete_message(ctx.message)
+
+
+@bot.command(pass_context=True)
+async def roster(ctx):
+    await bot.send_message(ctx.message.author,
+                           'You can find the roster sheet here: https://docs.google.com/spreadsheets/d/1WLPTnuBK-RwwCC0EJH2UROAiPTUrTvXeBfEIPVYkj4Y/edit#gid=1256147381')
+    await bot.delete_message(ctx.message)
+
 @bot.event
 async def on_ready():
     print('Logged in as')
@@ -166,7 +182,6 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     await bot.process_commands(message)
-    # print(message.content)
     if message.channel.is_private:
         if message.author == message.channel.me:
             rec = message.channel.recipients[0]
@@ -183,38 +198,12 @@ async def on_message(message):
                                                                                                       time.second,
                                                                                                       message.clean_content))
 
-    # if message.content.startswith('$hello'):
-    #     await client.send_message(message.channel, 'Hello! {0.author.mention}'.format(message))
-
-    if message.content.startswith('$thinking'):
-        await bot.send_message(message.channel, ':thinking:')
-
     # Joke command, trigger when someone posts the thinking emoji and then adds the thinking emoji as a reaction to the message. Proof of concept
     if ':thinking:' in message.content.lower():
         await bot.add_reaction(message, '\N{THINKING FACE}')
 
     if message.author == bot.user or message.channel.is_private:
         return
-
-    # Joke command, trigger when someone posts the thinking emoji and then adds the thinking emoji as a reaction to the message. Proof of concept
-    if ':thinking:' in message.content.lower():
-        await bot.add_reaction(message, '\N{THINKING FACE}')
-
-    # Shuts down the bot, can only be invoked by admins
-    if message.content.lower().startswith('$begone'):
-        if message.author.top_role.name in cfg.ROLES:
-            await bot.send_message(message.channel, 'byebye, bot is sleepy')
-            await bot.logout()
-        else:
-            await bot.send_message(message.author, 'Permission insufficient')
-            await bot.delete_message(message)
-
-    # Command which whispers the invoker the link to our roster sheet
-    if message.content.lower().startswith('$roster'):
-        await bot.send_message(message.author,
-                               'You can find the roster sheet here: https://docs.google.com/spreadsheets/d/1WLPTnuBK-RwwCC0EJH2UROAiPTUrTvXeBfEIPVYkj4Y/edit#gid=1256147381')
-        await bot.delete_message(message)
-
 
 @bot.event
 async def on_member_join(member):
