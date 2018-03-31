@@ -17,6 +17,7 @@ from src import cfg
 description = '''Discord Bot for the Guild Furor on Tarren Mill-EU'''
 
 bot = commands.Bot(command_prefix='$', description=description, )
+prefix = bot.command_prefix
 
 now = datetime.datetime.now()
 log_dir = './log/'
@@ -58,7 +59,7 @@ async def about(ctx):
                            "nicentra#7385 on discord or Strømbølina on Tarren Mill EU Horde and you can find my repository here:\n"
                            "https://github.com/nicentra/FurorDiscordBot\n"
                            "My job is to annoy the residents and raiders of the guild Furor from Tarren Mill EU on their Discord server and lend a hand where I can.\n"
-                           "If you need to know about my commands please use $commands")
+                           "If you need to know about my commands please use {0}commands".format(prefix))
     if not ctx.message.channel.is_private:
         await bot.delete_message(ctx.message)
 
@@ -67,38 +68,38 @@ async def about(ctx):
 async def commands(ctx):
     message = ctx.message
     author = message.author
-    if str(author.top_role) in cfg.ROLES:
+    if not message.channel.is_private and (author.top_role) in cfg.ROLES:
         await bot.send_message(author, 'I have the following commands for you:\n\n'
-                                       '$commands : I\'ll provide you with this\n'
-                                       '$about : I\'ll tell you my life story :)\n'
-                                       '$hello : I\'ll greet you :)\n'
-                                       '$add X Y : returns the sum of X and Y\n'
-                                       '$multiply X Y : returns the product of X and Y\n'
-                                       '$echo : echo echo echo\n'
-                                       '$repeat X Y : Repeats Y X-times\n'
-                                       '$thinking : :thinking:\n'
-                                       '$roster : I\'ll provide you with a link to our roster sheet\n'
-                                       '$nick X : Changes your nickname to X\n\n'
+                                       '{0}commands : I\'ll provide you with this\n'
+                                       '{0}about : I\'ll tell you my life story :)\n'
+                                       '{0}hello : I\'ll greet you :)\n'
+                                       '{0}add X Y : returns the sum of X and Y\n'
+                                       '{0}multiply X Y : returns the product of X and Y\n'
+                                       '{0}echo : echo echo echo\n'
+                                       '{0}repeat X Y : Repeats Y X-times\n'
+                                       '{0}thinking : :thinking:\n'
+                                       '{0}roster : I\'ll provide you with a link to our roster sheet\n'
+                                       '{0}nick X : Changes your nickname to X\n\n'
                                        '\tSidenote : The following commands are only available to admins\n\n'
-                                       '$nick @mention X : Changes the nick of @mention to X\n'
-                                       '$purge : Purges all messages from the invoked channel\n'
-                                       '$purge time X : Purges all messages from the last X minutes in the invoked channel\n'
-                                       '$purge amount X : Purges the last X messages in the invoked channel\n'
-                                       '$begone : Shuts the bot down, only available to admins')
+                                       '{0}nick @mention X : Changes the nick of @mention to X\n'
+                                       '{0}purge : Purges all messages from the invoked channel\n'
+                                       '{0}purge time X : Purges all messages from the last X minutes in the invoked channel\n'
+                                       '{0}purge amount X : Purges the last X messages in the invoked channel\n'
+                                       '{0}begone : Shuts the bot down, only available to admins'.format(prefix))
         if not ctx.message.channel.is_private:
             await bot.delete_message(ctx.message)
     else:
         await bot.send_message(author, 'I have the following commands for you:\n\n'
-                                       '$commands : I\'ll provide you with this\n'
-                                       '$about : I\'ll tell you my life story :)\n'
-                                       '$hello : I\'ll greet you :)\n'
-                                       '$add X Y : returns the sum of X and Y\n'
-                                       '$multiply X Y : returns the product of X and Y\n'
-                                       '$echo : echo echo echo\n'
-                                       '$repeat X Y : Repeats Y X-times\n'
-                                       '$thinking : :thinking:\n'
-                                       '$roster : I\'ll provide you with a link to our roster sheet\n'
-                                       '$nick X : Changes your nickname to X')
+                                       '{0}commands : I\'ll provide you with this\n'
+                                       '{0}about : I\'ll tell you my life story :)\n'
+                                       '{0}hello : I\'ll greet you :)\n'
+                                       '{0}add X Y : returns the sum of X and Y\n'
+                                       '{0}multiply X Y : returns the product of X and Y\n'
+                                       '{0}echo : echo echo echo\n'
+                                       '{0}repeat X Y : Repeats Y X-times\n'
+                                       '{0}thinking : :thinking:\n'
+                                       '{0}roster : I\'ll provide you with a link to our roster sheet\n'
+                                       '{0}nick X : Changes your nickname to X'.format(prefix))
         if not ctx.message.channel.is_private:
             await bot.delete_message(ctx.message)
 
@@ -273,11 +274,13 @@ async def on_message(message):
 async def on_member_join(member):
     if member.server.name == 'FurorBotTest':
         await bot.send_message(member,
-                               'Welcome to my server, I hope you enjoy your stay! I\'m currently very much work in progress! For questions contact my creator on discord under nicentra#7385 or use $about')
+                               'Welcome to my server, I hope you enjoy your stay! I\'m currently very much work in progress! For questions contact my creator on discord under nicentra#7385 or use {0}about'.format(
+                                   prefix))
     elif member.server.name == 'Furor':
         await bot.send_message(member,
-                               'Welcome to the Furor guild discord! Please make sure to change your nickname to your ingame character name (invoke $nick [YOURNAME] for this). '
-                               'Additionally try $commands for a full list of commands. For questions contact my creator on discord under nicentra#7385 or use $about')
+                               'Welcome to the Furor guild discord! Please make sure to change your nickname to your ingame character name (invoke {0}nick [YOURNAME] for this). '
+                               'Additionally try {0}commands for a full list of commands. For questions contact my creator on discord under nicentra#7385 or use {0}about'.format(
+                                   prefix))
 
 
 @bot.event
@@ -295,8 +298,8 @@ async def on_member_update(before, after):
                                        'You can find the guild rules here: '
                                        'http://forum.team-furor.com/t2694-guild-rules\n'
                                        'Furthermore, if you haven\'t yet, please change your discord nickname to your character nickname so we can recognize you! '
-                                       '(You can do so with $nick YOURNEWNAME)\n'
-                                       'Onwards to glory!')
+                                       '(You can do so with {0}nick YOURNEWNAME)\n'
+                                       'Onwards to glory!'.format(prefix))
 
 
 bot.loop.create_task(raider_reminder())
