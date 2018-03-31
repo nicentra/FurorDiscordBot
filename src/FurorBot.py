@@ -52,6 +52,10 @@ async def close_player(voice, player):
             asyncio.sleep(10)
 
 
+@bot.command()
+async def help():
+    return
+
 @bot.command(pass_context=True)
 async def sr(ctx, content):
     # REMEMBER TO DOWNLOAD youtube_dl VIA PIP
