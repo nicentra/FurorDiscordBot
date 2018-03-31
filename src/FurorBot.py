@@ -1,6 +1,6 @@
 ''''
 
-Github Release, required token.py not included. Please create in the src folder a file called token.py with the following line:
+Github Release, required FurorBotToken.py not included. Please create in the src folder a file called FurorBotToken.py with the following line:
 TOKEN = 'Your_OAuth_Token'
 
 '''
@@ -11,7 +11,7 @@ import datetime
 
 from discord.ext import commands
 
-import token
+from src import FurorBotToken
 from src import cfg
 
 description = '''Discord Bot for the Guild Furor on Tarren Mill-EU'''
@@ -26,14 +26,12 @@ log_name = 'log-{:04d}-{:02d}-{:02d}.txt'.format(now.year, now.month, now.day)
 async def raider_reminder():
     await bot.wait_until_ready()
     for s in bot.servers:
-        # print(str(s))
-        if s.name == 'FurorBotTest':
+        if s.name == 'Furor':
             for c in s.channels:
                 for r in s.roles:
                     if str(r) == 'raiders':
                         role_mention = r
-                # print(str(c))
-                if c.name == 'botspam':
+                if c.name == 'raiders-chat':
                     channel = c
     while not bot.is_closed:
         date = datetime.datetime.now()
@@ -51,6 +49,58 @@ async def test(content):
     #
     # await bot.say('Yo {}'.format(content.mentions[0].mention))
     await bot.say('')
+
+
+@bot.command(pass_context=True)
+async def about(ctx):
+    await bot.send_message(ctx.message.author,
+                           "I am a Discord bot written in Python3 based on the Discordpy library. My creator is "
+                           "nicentra#7385 on discord or Strømbølina on Tarren Mill EU Horde and you can find my repository here:\n"
+                           "https://github.com/nicentra/FurorDiscordBot\n"
+                           "My job is to annoy the residents and raiders of the guild Furor from Tarren Mill EU on their Discord server and lend a hand where I can.\n"
+                           "If you need to know about my commands please use $commands")
+    if not ctx.message.channel.is_private:
+        await bot.delete_message(ctx.message)
+
+
+@bot.command(pass_context=True)
+async def commands(ctx):
+    message = ctx.message
+    author = message.author
+    if str(author.top_role) in cfg.ROLES:
+        await bot.send_message(author, 'I have the following commands for you:\n\n'
+                                       '$commands : I\'ll provide you with this\n'
+                                       '$about : I\'ll tell you my life story :)\n'
+                                       '$hello : I\'ll greet you :)\n'
+                                       '$add X Y : returns the sum of X and Y\n'
+                                       '$multiply X Y : returns the product of X and Y\n'
+                                       '$echo : echo echo echo\n'
+                                       '$repeat X Y : Repeats Y X-times\n'
+                                       '$thinking : :thinking:\n'
+                                       '$roster : I\'ll provide you with a link to our roster sheet\n'
+                                       '$nick X : Changes your nickname to X\n\n'
+                                       '\tSidenote : The following commands are only available to admins\n\n'
+                                       '$nick @mention X : Changes the nick of @mention to X\n'
+                                       '$purge : Purges all messages from the invoked channel\n'
+                                       '$purge time X : Purges all messages from the last X minutes in the invoked channel\n'
+                                       '$purge amount X : Purges the last X messages in the invoked channel\n'
+                                       '$begone : Shuts the bot down, only available to admins')
+        if not ctx.message.channel.is_private:
+            await bot.delete_message(ctx.message)
+    else:
+        await bot.send_message(author, 'I have the following commands for you:\n\n'
+                                       '$commands : I\'ll provide you with this\n'
+                                       '$about : I\'ll tell you my life story :)\n'
+                                       '$hello : I\'ll greet you :)\n'
+                                       '$add X Y : returns the sum of X and Y\n'
+                                       '$multiply X Y : returns the product of X and Y\n'
+                                       '$echo : echo echo echo\n'
+                                       '$repeat X Y : Repeats Y X-times\n'
+                                       '$thinking : :thinking:\n'
+                                       '$roster : I\'ll provide you with a link to our roster sheet\n'
+                                       '$nick X : Changes your nickname to X')
+        if not ctx.message.channel.is_private:
+            await bot.delete_message(ctx.message)
 
 
 @bot.command()
@@ -85,13 +135,15 @@ async def nick(ctx):
     elif len(mentions) == 1:
         if str(message.author.top_role) not in cfg.ROLES:
             await bot.send_message(message.author, 'Insufficient permission')
-            await bot.delete_message(message)
+            if not ctx.message.channel.is_private:
+                await bot.delete_message(message)
         else:
             split = message.content.split(' ', maxsplit=2)
             await bot.change_nickname(mentions[0], split[2])
     else:
         await bot.send_message(message.author, 'Too many mentions')
-        await bot.delete_message(message)
+        if not ctx.message.channel.is_private:
+            await bot.delete_message(message)
 
 
 @bot.command()
@@ -101,57 +153,58 @@ async def repeat(times: int, *, content='repeating...'):
         await bot.say(content)
 
 
-# Command to purge the channel it has been invoked in, it has 3 options and is only useable by admins:
-# No option ($purge) => purges the maximum amount of messages from the invoked channel
-# $purge time X => purges all messages from the last X minutes
-# $purge amount X => purges last X messages
-# $purge member @mention X => Purges last X messages from the mentioned member (make sure to validate the mention)
-
 @bot.command(pass_context=True)
 async def purge(ctx, option: str = '', parameter='', from_parameter=100):
     message = ctx.message
     if str(message.author.top_role) not in cfg.ROLES:
         await bot.send_message(message.author, 'Insufficient permission')
-        await bot.delete_message(message)
+        if not ctx.message.channel.is_private:
+            await bot.delete_message(message)
     elif option == '':  # Purge everything
         await bot.purge_from(message.channel)
     elif option in cfg.TIME:  # Purge everything from X minutes ago
         if (not parameter.isdecimal()) or int(parameter) < 1:
             await bot.send_message(message.author, 'Please only enter valid numbers')
-            await bot.delete_message(message)
+            if not ctx.message.channel.is_private:
+                await bot.delete_message(message)
         else:
             await bot.purge_from(message.channel, after=(
                     message.timestamp - datetime.timedelta(minutes=int(parameter))))
     elif option in cfg.AMOUNT:  # Purge X amount of messages
         if (not parameter.isdecimal()) or int(parameter) < 1:
             await bot.send_message(message.author, 'Please only enter valid numbers')
-            await bot.delete_message(message)
+            if not ctx.message.channel.is_private:
+                await bot.delete_message(message)
         else:
             await bot.purge_from(message.channel, limit=(int(parameter) + 1))
-    elif option in cfg.MEMBER:  # Purge X messages from @mention, still not working properly aaaaaaaaaaargh, back to the drawing board <.<
-        mentions = message.mentions
-        if len(mentions) > 1:
-            await bot.send_message(message.author, 'Only include one mention for the command to work')
+    # elif option in cfg.MEMBER:  # Purge X messages from @mention, still not working properly aaaaaaaaaaargh, back to the drawing board <.<
+    #     mentions = message.mentions
+    #     if len(mentions) > 1:
+    #         await bot.send_message(message.author, 'Only include one mention for the command to work')
+    #         await bot.delete_message(message)
+    #     else:
+    #         if (not from_parameter.isdecimal()) or int(from_parameter) < 1:
+    #             await bot.send_message(message.author, 'Please only enter valid numbers')
+    #             await bot.delete_message(message)
+    #         else:
+    #             purged_member = mentions[0]
+    #             del_count = 0
+    #
+    #             def is_from(m):
+    #                 nonlocal del_count
+    #                 nonlocal purged_member
+    #                 if del_count < int(from_parameter) + 1:
+    #                     del_count += 1
+    #                     return m.author == purged_member
+    #                 else:
+    #                     return False
+    #
+    #             await bot.purge_from(message.channel, check=is_from)
+    #             await bot.delete_message(message)
+    else:
+        await bot.send_message(message.author, 'Invalid parameter')
+        if not ctx.message.channel.is_private:
             await bot.delete_message(message)
-        else:
-            if (not from_parameter.isdecimal()) or int(from_parameter) < 1:
-                await bot.send_message(message.author, 'Please only enter valid numbers')
-                await bot.delete_message(message)
-            else:
-                purged_member = mentions[0]
-                del_count = 0
-
-                def is_from(m):
-                    nonlocal del_count
-                    nonlocal purged_member
-                    if del_count < int(from_parameter) + 1:
-                        del_count += 1
-                        return m.author == purged_member
-                    else:
-                        return False
-
-                await bot.purge_from(message.channel, check=is_from)
-                await bot.delete_message(message)
 
 
 @bot.command()
@@ -166,14 +219,16 @@ async def begone(ctx):
         await bot.logout()
     else:
         await bot.send_message(ctx.message.author, 'Permission insufficient')
-        await bot.delete_message(ctx.message)
+        if not ctx.message.channel.is_private:
+            await bot.delete_message(ctx.message)
 
 
 @bot.command(pass_context=True)
 async def roster(ctx):
     await bot.send_message(ctx.message.author,
                            'You can find the roster sheet here: https://docs.google.com/spreadsheets/d/1WLPTnuBK-RwwCC0EJH2UROAiPTUrTvXeBfEIPVYkj4Y/edit#gid=1256147381')
-    await bot.delete_message(ctx.message)
+    if not ctx.message.channel.is_private:
+        await bot.delete_message(ctx.message)
 
 
 @bot.event
@@ -207,8 +262,7 @@ async def on_message(message):
                                                                                                       time.second,
                                                                                                       message.clean_content))
 
-    # Joke command, trigger when someone posts the thinking emoji and then adds the thinking emoji as a reaction to the message. Proof of concept
-    if ':thinking:' in message.content.lower():
+    if ':thinking:' in message.content.lower() and not message.channel.is_private:
         await bot.add_reaction(message, '\N{THINKING FACE}')
 
     if message.author == bot.user or message.channel.is_private:
@@ -219,10 +273,11 @@ async def on_message(message):
 async def on_member_join(member):
     if member.server.name == 'FurorBotTest':
         await bot.send_message(member,
-                               'Welcome to my server, I hope you enjoy your stay! I\'m currently very much work in progress! For questions contact my creator on discord under nicentra#7385')
-    else:
+                               'Welcome to my server, I hope you enjoy your stay! I\'m currently very much work in progress! For questions contact my creator on discord under nicentra#7385 or use $about')
+    elif member.server.name == 'Furor':
         await bot.send_message(member,
-                               'Welcome to the Furor guild discord! Please make sure to change your nickname to your ingame character name (invoke $nick [YOURNAME] for this). Additionally try $commands for a full list of commands. For questions contact my creator on discord under nicentra#7385')
+                               'Welcome to the Furor guild discord! Please make sure to change your nickname to your ingame character name (invoke $nick [YOURNAME] for this). '
+                               'Additionally try $commands for a full list of commands. For questions contact my creator on discord under nicentra#7385 or use $about')
 
 
 @bot.event
@@ -235,8 +290,14 @@ async def on_member_update(before, after):
         for r in after.roles:
             if str(r) == 'raiders':
                 await bot.send_message(after,
-                                       'Welcome to our raiding team! We\'re happy to have you join us for all the future glory that awaits us (and all that sweet loot as well of course!)\nIf you haven\'t already we would like you to read our rules when you have time off from slaying dragons and what not. You can find the guild rules here: http://forum.team-furor.com/t2694-guild-rules\nFurthermore, if you haven\'t yet, please change your discord nickname to your character nickname so we can recognize you! (you can do so with $nick YOURNEWNAME)\nOnwards to glory!')
+                                       'Welcome to our raiding team! We\'re happy to have you join us for all the future glory that awaits us (and all that sweet loot as well of course!)\n'
+                                       'If you haven\'t already we would like you to read our rules when you have time off from slaying dragons and what not. '
+                                       'You can find the guild rules here: '
+                                       'http://forum.team-furor.com/t2694-guild-rules\n'
+                                       'Furthermore, if you haven\'t yet, please change your discord nickname to your character nickname so we can recognize you! '
+                                       '(You can do so with $nick YOURNEWNAME)\n'
+                                       'Onwards to glory!')
 
 
 bot.loop.create_task(raider_reminder())
-bot.run(token.TOKEN)
+bot.run(FurorBotToken.TOKEN)

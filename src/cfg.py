@@ -43,5 +43,3 @@ MEMBER = [
     "person",
     "from"
 ]
-
-# RAIDER_GREETING = discord.Embed()
