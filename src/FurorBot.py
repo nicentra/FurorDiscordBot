@@ -9,6 +9,7 @@ import asyncio
 import calendar
 import datetime
 
+import discord
 from discord.ext import commands
 
 from src import FurorBotToken
@@ -43,13 +44,30 @@ async def raider_reminder():
         await asyncio.sleep(1)
 
 
-@bot.command()
-async def test(content):
-    # print(content)
-    # print(len(content.mentions))
-    #
-    # await bot.say('Yo {}'.format(content.mentions[0].mention))
-    await bot.say('')
+async def close_player(voice, player):
+    while voice.is_connected():
+        if player.is_done():
+            voice.disconnect()
+        else:
+            asyncio.sleep(10)
+
+
+@bot.command(pass_context=True)
+async def sr(ctx, content):
+    # REMEMBER TO DOWNLOAD youtube_dl VIA PIP
+    for v in bot.voice_clients:
+        if v.is_connected():
+            await v.disconnect()
+            break
+    author_channel = ctx.message.author.voice.voice_channel
+    voice = await bot.join_voice_channel(author_channel)
+
+    async def close_voice():
+        await voice.disconnect()
+
+    player = await voice.create_ytdl_player(content)
+    player.start()
+    player.volume = 0.3
 
 
 @bot.command(pass_context=True)
@@ -68,7 +86,7 @@ async def about(ctx):
 async def commands(ctx):
     message = ctx.message
     author = message.author
-    if not message.channel.is_private and (author.top_role) in cfg.ROLES:
+    if (not message.channel.is_private) and str(author.top_role) in cfg.ROLES:
         await bot.send_message(author, 'I have the following commands for you:\n\n'
                                        '{0}commands : I\'ll provide you with this\n'
                                        '{0}about : I\'ll tell you my life story :)\n'
@@ -112,7 +130,7 @@ async def add(left: int, right: int = 0):
 
 @bot.command()
 async def multiply(left: int, right: int = 1):
-    """Adds two numbers together."""
+    """Multiplies two numbers together."""
     await bot.say(left * right)
 
 
@@ -237,6 +255,13 @@ async def on_ready():
     print('Logged in as')
     print(bot.user)
     print('------')
+    if not discord.opus.is_loaded():
+        # the 'opus' library here is opus.dll on windows
+        # or libopus.so on linux in the current directory
+        # you should replace this with the location the
+        # opus library is located in and with the proper filename.
+        # note that on windows this DLL is automatically provided for you
+        discord.opus.load_opus('opus')
     for servers in bot.servers:
         for channels in servers.channels:
             if channels.name == 'botspam':
