@@ -1,9 +1,17 @@
+''''
+
+Github Release, required token.py not included. Please create in the src folder a file called token.py with the following line:
+TOKEN = 'Your_OAuth_Token'
+
+'''
+
 import asyncio
 import calendar
 import datetime
 
 from discord.ext import commands
 
+import token
 from src import cfg
 
 description = '''Discord Bot for the Guild Furor on Tarren Mill-EU'''
@@ -167,6 +175,7 @@ async def roster(ctx):
                            'You can find the roster sheet here: https://docs.google.com/spreadsheets/d/1WLPTnuBK-RwwCC0EJH2UROAiPTUrTvXeBfEIPVYkj4Y/edit#gid=1256147381')
     await bot.delete_message(ctx.message)
 
+
 @bot.event
 async def on_ready():
     print('Logged in as')
@@ -205,6 +214,7 @@ async def on_message(message):
     if message.author == bot.user or message.channel.is_private:
         return
 
+
 @bot.event
 async def on_member_join(member):
     if member.server.name == 'FurorBotTest':
@@ -225,8 +235,8 @@ async def on_member_update(before, after):
         for r in after.roles:
             if str(r) == 'raiders':
                 await bot.send_message(after,
-                                       'Congratulations on becoming a part of the raid team! If you haven\'t yet, please change your server nickname to your ingame charactername so we can identify you! The easiest way to do so is using my command $nick MyNewNickname !\n\nFurthermore, be sure to check out our #resources where you can a link to our forums, our attendance sheet as well as a list of mandatory addons!')
+                                       'Welcome to our raiding team! We\'re happy to have you join us for all the future glory that awaits us (and all that sweet loot as well of course!)\nIf you haven\'t already we would like you to read our rules when you have time off from slaying dragons and what not. You can find the guild rules here: http://forum.team-furor.com/t2694-guild-rules\nFurthermore, if you haven\'t yet, please change your discord nickname to your character nickname so we can recognize you! (you can do so with $nick YOURNEWNAME)\nOnwards to glory!')
 
 
 bot.loop.create_task(raider_reminder())
-bot.run(cfg.TOKEN)
+bot.run(token.TOKEN)

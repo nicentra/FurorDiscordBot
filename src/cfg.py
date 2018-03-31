@@ -1,8 +1,4 @@
-import datetime
-import time
-import calendar
 import os
-import discord
 
 
 def write_to_log(log_dir, log_name, entry):
@@ -19,8 +15,6 @@ def write_to_log(log_dir, log_name, entry):
     log.write(entry)
     log.close()
 
-
-TOKEN = 'NDI3NzIyNTEyMjY5MzEyMDAx.DZo1AA.sUlzLwKbCtMvG0x8Ddiv9xS04sU'
 
 ROLES = [
     "Admins",

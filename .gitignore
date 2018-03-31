@@ -160,3 +160,4 @@ venv.bak/
 /bot_log/
 /log/
 /src/log/
+/src/token.py
