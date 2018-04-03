@@ -17,7 +17,7 @@ from src import cfg
 
 description = '''Discord Bot for the Guild Furor on Tarren Mill-EU'''
 
-bot = commands.Bot(command_prefix='$', description=description, )
+bot = commands.Bot(command_prefix='$', description=description, pm_help=False)
 prefix = bot.command_prefix
 
 now = datetime.datetime.now()
@@ -25,7 +25,7 @@ log_dir = './log/'
 log_name = 'log-{:04d}-{:02d}-{:02d}.txt'.format(now.year, now.month, now.day)
 
 
-async def raider_reminder():
+async def raid_signup_reminder():
     await bot.wait_until_ready()
     for s in bot.servers:
         if s.name == 'Furor':
@@ -38,8 +38,27 @@ async def raider_reminder():
     while not bot.is_closed:
         date = datetime.datetime.now()
         weekday = calendar.weekday(date.year, date.month, date.day)
-        if (weekday == 3 or weekday == 6) and date.hour == 19 and date.minute == 0:
+        if (weekday == 0 or weekday == 3) and date.hour == 19 and date.minute == 0:
             await bot.send_message(channel, '{} Remember to sign up for raids'.format(role_mention.mention))
+            await asyncio.sleep(60)
+        await asyncio.sleep(1)
+
+
+async def raid_login_reminder():
+    await bot.wait_until_ready()
+    for s in bot.servers:
+        if s.name == 'Furor':
+            for c in s.channels:
+                for r in s.roles:
+                    if str(r) == 'raiders':
+                        role_mention = r
+                if c.name == 'raiders-chat':
+                    channel = c
+    while not bot.is_closed:
+        date = datetime.datetime.now()
+        weekday = calendar.weekday(date.year, date.month, date.day)
+        if (weekday == 2 or weekday == 4 or weekday == 6) and date.hour == 18 and date.minute == 40:
+            await bot.send_message(channel, '{} Log on your mains for raid!'.format(role_mention.mention))
             await asyncio.sleep(60)
         await asyncio.sleep(1)
 
@@ -52,9 +71,9 @@ async def close_player(voice, player):
             asyncio.sleep(10)
 
 
-@bot.command()
-async def help():
-    return
+# @bot.command()
+# async def help():
+#     return
 
 @bot.command(pass_context=True)
 async def sr(ctx, content):
@@ -71,7 +90,7 @@ async def sr(ctx, content):
 
     player = await voice.create_ytdl_player(content)
     player.start()
-    player.volume = 0.3
+    player.volume = 0.1
 
 
 @bot.command(pass_context=True)
@@ -91,37 +110,37 @@ async def commands(ctx):
     message = ctx.message
     author = message.author
     if (not message.channel.is_private) and str(author.top_role) in cfg.ROLES:
-        await bot.send_message(author, 'I have the following commands for you:\n\n'
-                                       '{0}commands : I\'ll provide you with this\n'
-                                       '{0}about : I\'ll tell you my life story :)\n'
-                                       '{0}hello : I\'ll greet you :)\n'
-                                       '{0}add X Y : returns the sum of X and Y\n'
-                                       '{0}multiply X Y : returns the product of X and Y\n'
-                                       '{0}echo : echo echo echo\n'
-                                       '{0}repeat X Y : Repeats Y X-times\n'
-                                       '{0}thinking : :thinking:\n'
-                                       '{0}roster : I\'ll provide you with a link to our roster sheet\n'
-                                       '{0}nick X : Changes your nickname to X\n\n'
-                                       '\tSidenote : The following commands are only available to admins\n\n'
-                                       '{0}nick @mention X : Changes the nick of @mention to X\n'
-                                       '{0}purge : Purges all messages from the invoked channel\n'
-                                       '{0}purge time X : Purges all messages from the last X minutes in the invoked channel\n'
-                                       '{0}purge amount X : Purges the last X messages in the invoked channel\n'
-                                       '{0}begone : Shuts the bot down, only available to admins'.format(prefix))
+        s = '```I have the following commands for you:\n\n' \
+            '{0}commands : I\'ll provide you with this\n' \
+            '{0}about : I\'ll tell you my life story :)\n' \
+            '{0}hello : I\'ll greet you :)\n' \
+            '{0}add X Y : returns the sum of X and Y\n' \
+            '{0}multiply X Y : returns the product of X and Y\n' \
+            '{0}echo : echo echo echo\n' \
+            '{0}thinking : :thinking:\n' \
+            '{0}roster : I\'ll provide you with a link to our roster sheet\n' \
+            '{0}nick X : Changes your nickname to X\n\n' \
+            '\tSidenote : The following commands are only available to admins\n\n' \
+            '{0}nick @mention X : Changes the nick of @mention to X\n' \
+            '{0}purge : Purges all messages from the invoked channel\n' \
+            '{0}purge time X : Purges all messages from the last X minutes in the invoked channel\n' \
+            '{0}purge amount X : Purges the last X messages in the invoked channel\n' \
+            '{0}begone : Shuts the bot down, only available to admins```'.format(prefix)
+        await bot.send_message(author, s)
         if not ctx.message.channel.is_private:
             await bot.delete_message(ctx.message)
     else:
-        await bot.send_message(author, 'I have the following commands for you:\n\n'
-                                       '{0}commands : I\'ll provide you with this\n'
-                                       '{0}about : I\'ll tell you my life story :)\n'
-                                       '{0}hello : I\'ll greet you :)\n'
-                                       '{0}add X Y : returns the sum of X and Y\n'
-                                       '{0}multiply X Y : returns the product of X and Y\n'
-                                       '{0}echo : echo echo echo\n'
-                                       '{0}repeat X Y : Repeats Y X-times\n'
-                                       '{0}thinking : :thinking:\n'
-                                       '{0}roster : I\'ll provide you with a link to our roster sheet\n'
-                                       '{0}nick X : Changes your nickname to X'.format(prefix))
+        s = '```I have the following commands for you:\n\n' \
+            '{0}commands : I\'ll provide you with this\n' \
+            '{0}about : I\'ll tell you my life story :)\n' \
+            '{0}hello : I\'ll greet you :)\n' \
+            '{0}add X Y : returns the sum of X and Y\n' \
+            '{0}multiply X Y : returns the product of X and Y\n' \
+            '{0}echo : echo echo echo\n' \
+            '{0}thinking : :thinking:\n' \
+            '{0}roster : I\'ll provide you with a link to our roster sheet\n' \
+            '{0}nick X : Changes your nickname to X```'.format(prefix)
+        await bot.send_message(author, s)
         if not ctx.message.channel.is_private:
             await bot.delete_message(ctx.message)
 
@@ -169,11 +188,11 @@ async def nick(ctx):
             await bot.delete_message(message)
 
 
-@bot.command()
-async def repeat(times: int, *, content='repeating...'):
-    """Repeats a message multiple times."""
-    for i in range(times):
-        await bot.say(content)
+# @bot.command()
+# async def repeat(times: int, *, content='repeating...'):
+#     """Repeats a message multiple times."""
+#     for i in range(times):
+#         await bot.say(content)
 
 
 @bot.command(pass_context=True)
@@ -267,10 +286,12 @@ async def on_ready():
         # note that on windows this DLL is automatically provided for you
         discord.opus.load_opus('opus')
     for servers in bot.servers:
-        for channels in servers.channels:
-            if channels.name == 'botspam':
-                await bot.send_message(channels, 'Bot online :robot:')
-                break
+        if servers.name == 'FurorBotTest':
+            for channels in servers.channels:
+                if channels.name == 'botspam':
+                    await bot.send_message(channels, 'Bot online :robot:')
+                    break
+    bot.remove_command('help')
 
 
 @bot.event
@@ -307,8 +328,8 @@ async def on_member_join(member):
                                    prefix))
     elif member.server.name == 'Furor':
         await bot.send_message(member,
-                               'Welcome to the Furor guild discord! Please make sure to change your nickname to your ingame character name (invoke {0}nick [YOURNAME] for this). '
-                               'Additionally try {0}commands for a full list of commands. For questions contact my creator on discord under nicentra#7385 or use {0}about'.format(
+                               '```Welcome to the Furor guild discord! Please make sure to change your nickname to your ingame character name (invoke {0}nick [YOURNAME] for this). '
+                               'Additionally try {0}commands for a full list of commands. For questions contact my creator on discord under nicentra#7385 or use {0}about```'.format(
                                    prefix))
 
 
@@ -322,14 +343,15 @@ async def on_member_update(before, after):
         for r in after.roles:
             if str(r) == 'raiders':
                 await bot.send_message(after,
-                                       'Welcome to our raiding team! We\'re happy to have you join us for all the future glory that awaits us (and all that sweet loot as well of course!)\n'
+                                       '```Welcome to our raiding team! We\'re happy to have you join us for all the future glory that awaits us (and all that sweet loot as well of course!)\n'
                                        'If you haven\'t already we would like you to read our rules when you have time off from slaying dragons and what not. '
                                        'You can find the guild rules here: '
                                        'http://forum.team-furor.com/t2694-guild-rules\n'
                                        'Furthermore, if you haven\'t yet, please change your discord nickname to your character nickname so we can recognize you! '
                                        '(You can do so with {0}nick YOURNEWNAME)\n'
-                                       'Onwards to glory!'.format(prefix))
+                                       'Onwards to glory!```'.format(prefix))
 
 
-bot.loop.create_task(raider_reminder())
+bot.loop.create_task(raid_signup_reminder())
+bot.loop.create_task(raid_login_reminder())
 bot.run(FurorBotToken.TOKEN)
