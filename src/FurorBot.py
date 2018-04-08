@@ -77,20 +77,21 @@ async def close_player(voice, player):
 
 @bot.command(pass_context=True)
 async def sr(ctx, content):
-    # REMEMBER TO DOWNLOAD youtube_dl VIA PIP
-    for v in bot.voice_clients:
-        if v.is_connected():
-            await v.disconnect()
-            break
-    author_channel = ctx.message.author.voice.voice_channel
-    voice = await bot.join_voice_channel(author_channel)
+    if str(ctx.message.server) == 'FurorBotTest':
+        # REMEMBER TO DOWNLOAD youtube_dl VIA PIP
+        for v in bot.voice_clients:
+            if v.is_connected():
+                await v.disconnect()
+                break
+        author_channel = ctx.message.author.voice.voice_channel
+        voice = await bot.join_voice_channel(author_channel)
 
-    async def close_voice():
-        await voice.disconnect()
+        async def close_voice():
+            await voice.disconnect()
 
-    player = await voice.create_ytdl_player(content)
-    player.start()
-    player.volume = 0.1
+        player = await voice.create_ytdl_player(content)
+        player.start()
+        player.volume = 0.1
 
 
 @bot.command(pass_context=True)
@@ -101,8 +102,6 @@ async def about(ctx):
                            "https://github.com/nicentra/FurorDiscordBot\n"
                            "My job is to annoy the residents and raiders of the guild Furor from Tarren Mill EU on their Discord server and lend a hand where I can.\n"
                            "If you need to know about my commands please use {0}commands".format(prefix))
-    if not ctx.message.channel.is_private:
-        await bot.delete_message(ctx.message)
 
 
 @bot.command(pass_context=True)
@@ -119,6 +118,7 @@ async def commands(ctx):
             '{0}echo : echo echo echo\n' \
             '{0}thinking : :thinking:\n' \
             '{0}roster : I\'ll provide you with a link to our roster sheet\n' \
+            '{0}macros : I\'ll post a list of useful macros\n' \
             '{0}nick X : Changes your nickname to X\n\n' \
             '\tSidenote : The following commands are only available to admins\n\n' \
             '{0}nick @mention X : Changes the nick of @mention to X\n' \
@@ -127,8 +127,6 @@ async def commands(ctx):
             '{0}purge amount X : Purges the last X messages in the invoked channel\n' \
             '{0}begone : Shuts the bot down, only available to admins```'.format(prefix)
         await bot.send_message(author, s)
-        if not ctx.message.channel.is_private:
-            await bot.delete_message(ctx.message)
     else:
         s = '```I have the following commands for you:\n\n' \
             '{0}commands : I\'ll provide you with this\n' \
@@ -139,10 +137,9 @@ async def commands(ctx):
             '{0}echo : echo echo echo\n' \
             '{0}thinking : :thinking:\n' \
             '{0}roster : I\'ll provide you with a link to our roster sheet\n' \
+            '{0}macros : I\'ll post a list of useful macros\n' \
             '{0}nick X : Changes your nickname to X```'.format(prefix)
         await bot.send_message(author, s)
-        if not ctx.message.channel.is_private:
-            await bot.delete_message(ctx.message)
 
 
 @bot.command()
@@ -219,30 +216,6 @@ async def purge(ctx, option: str = '', parameter='', from_parameter=100):
                 await bot.delete_message(message)
         else:
             await bot.purge_from(message.channel, limit=(int(parameter) + 1))
-    # elif option in cfg.MEMBER:  # Purge X messages from @mention, still not working properly aaaaaaaaaaargh, back to the drawing board <.<
-    #     mentions = message.mentions
-    #     if len(mentions) > 1:
-    #         await bot.send_message(message.author, 'Only include one mention for the command to work')
-    #         await bot.delete_message(message)
-    #     else:
-    #         if (not from_parameter.isdecimal()) or int(from_parameter) < 1:
-    #             await bot.send_message(message.author, 'Please only enter valid numbers')
-    #             await bot.delete_message(message)
-    #         else:
-    #             purged_member = mentions[0]
-    #             del_count = 0
-    #
-    #             def is_from(m):
-    #                 nonlocal del_count
-    #                 nonlocal purged_member
-    #                 if del_count < int(from_parameter) + 1:
-    #                     del_count += 1
-    #                     return m.author == purged_member
-    #                 else:
-    #                     return False
-    #
-    #             await bot.purge_from(message.channel, check=is_from)
-    #             await bot.delete_message(message)
     else:
         await bot.send_message(message.author, 'Invalid parameter')
         if not ctx.message.channel.is_private:
@@ -252,6 +225,12 @@ async def purge(ctx, option: str = '', parameter='', from_parameter=100):
 @bot.command()
 async def thinking():
     await bot.say(':thinking:')
+
+
+@bot.command()
+async def macros():
+    await bot.say('```Varimathras:\n'
+                  '/target [exists,nodead] Shadow of Varimathras; Varimathras```')
 
 
 @bot.command(pass_context=True)
@@ -269,8 +248,6 @@ async def begone(ctx):
 async def roster(ctx):
     await bot.send_message(ctx.message.author,
                            'You can find the roster sheet here: https://docs.google.com/spreadsheets/d/1WLPTnuBK-RwwCC0EJH2UROAiPTUrTvXeBfEIPVYkj4Y/edit#gid=1256147381')
-    if not ctx.message.channel.is_private:
-        await bot.delete_message(ctx.message)
 
 
 @bot.event
@@ -286,7 +263,7 @@ async def on_ready():
         # note that on windows this DLL is automatically provided for you
         discord.opus.load_opus('opus')
     for servers in bot.servers:
-        if servers.name == 'FurorBotTest':
+        if servers.name == 'FurorBotTest' or servers.name == 'Furor':
             for channels in servers.channels:
                 if channels.name == 'botspam':
                     await bot.send_message(channels, 'Bot online :robot:')
